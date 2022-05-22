@@ -1,0 +1,1 @@
+Do not modify this folder as it may disrupt add on function. Please do not share anything in this folder with another user as they could steal your AnkiSync access.
