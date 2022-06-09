@@ -548,7 +548,7 @@ class TestCSSSelectors(SoupTest):
         self.assert_selects('#inner > p:nth-of-type(2)', ['p1'])
 
     def test_select_on_element(self):
-        # Other tests operate on the tree; this operates on an element
+        # Other test operate on the tree; this operates on an element
         # within the tree.
         inner = self.soup.find("div", id="main")
         selected = inner.select("div")

@@ -180,7 +180,7 @@ class TreeBuilderForHtml5lib(treebuilder_base.TreeBuilder):
         return Element(self.soup, self.soup, None)
 
     def appendChild(self, node):
-        # XXX This code is not covered by the BS4 tests.
+        # XXX This code is not covered by the BS4 test.
         self.soup.append(node.element)
 
     def getDocument(self):

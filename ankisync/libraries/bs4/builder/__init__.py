@@ -269,11 +269,11 @@ class TreeBuilder(object):
 
         Different parsers do this differently. For instance, lxml
         introduces an empty <head> tag, and html5lib
-        doesn't. Abstracting this away lets us write simple tests
+        doesn't. Abstracting this away lets us write simple test
         which run HTML fragments through the parser and compare the
         results against other HTML fragments.
 
-        This method should not be used outside of tests.
+        This method should not be used outside of test.
 
         :param fragment: A string -- fragment of HTML.
         :return: A string -- a full HTML document.

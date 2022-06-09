@@ -9,7 +9,7 @@
 """
 access_token.py
 
-Instructions
+Notes
 - Access tokens are stored on ONE device only via the user_files folder
     - Does not sync across devices
     - Does persistent across addon updates
@@ -25,19 +25,18 @@ from pathlib import Path
 from aqt.utils import showInfo
 
 # Local application imports
-from ..config import USER_FILES
+from ..constants import USER_FILES
 
 
 @dataclass
 class DataClassAccessToken:
-    token: str = None
+    access_token: Union[str, None] = None
 
     # returns access token or none if not set
-    # todo: figure out if this works on iOS... look at the path
     def get(self) -> Union[str, None]:
 
-        if self.token is not None:
-            return self.token
+        if self.access_token is not None:
+            return self.access_token
         else:
             # get local access token
             try:
@@ -57,9 +56,10 @@ class DataClassAccessToken:
     def set(self, access_token) -> bool:
         try:
             with open(str(USER_FILES) + '\\access_token.json', 'a+') as outfile:
+                outfile.truncate(0)
                 json.dump({"access_token": access_token}, outfile)
 
-            self.token = access_token
+            self.access_token = access_token
 
             return True
         except Exception as error:
@@ -68,6 +68,9 @@ class DataClassAccessToken:
             return False
 
     def delete(self) -> bool:
+        # eliminate "cached" access token from this class
+        self.access_token = None
+
         access_token_file = Path(str(USER_FILES) + '\\access_token.json')
 
         try:

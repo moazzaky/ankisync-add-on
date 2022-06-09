@@ -10,7 +10,7 @@ from bs4.dammit import (
 )
 
 class TestUnicodeDammit(object):
-    """Standalone tests of UnicodeDammit."""
+    """Standalone test of UnicodeDammit."""
 
     def test_unicode_input(self):
         markup = "I'm already Unicode! \N{SNOWMAN}"
@@ -271,7 +271,7 @@ class TestEncodingDetector(object):
 
 
 class TestEntitySubstitution(object):
-    """Standalone tests of the EntitySubstitution class."""
+    """Standalone test of the EntitySubstitution class."""
     def setup_method(self):
         self.sub = EntitySubstitution
 

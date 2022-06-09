@@ -10,7 +10,7 @@ from aqt.qt import (
 QWidget, QVBoxLayout, QPushButton, QProgressBar, QTextEdit
 )
 
-from ..config import APP_NAME
+from ..constants import APP_NAME
 
 
 class DebugWidget(QWidget):
@@ -44,5 +44,5 @@ class DebugWidget(QWidget):
         self.text_edit.clear()
 
 
-debug_widget = DebugWidget()
+# debug_widget = DebugWidget()
 # debug_widget.show()

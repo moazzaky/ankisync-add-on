@@ -6,22 +6,24 @@
 # Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option)
 # any later version.
 
+# Inspired by https://github.com/AwesomeTTS/awesometts-anki-addon/blob/master/awesometts/paths.py, under GPLv3
+
 import os
-from aqt import mw
 
 """
-config.py
+constants.py
 
 Instructions
 - Only use for CONSTANTS
 """
 
-from pathlib import Path
-
+# App specific
 APP_NAME = "AnkiSync"
-BASE_URL = "https://ankisync.com/"
-# USER_FILES_PATH = os.path.join(mw.pm.addonFolder(), "AnkiSync")  # Path(__file__).parent.joinpath('user_files')
+# BASE_URL = "https://ankisync.com/"
+BASE_URL = "http://ankisync.home.arpa/"
+
+# Paths
 ADDON = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(ADDON)
 USER_FILES = os.path.join(ROOT, 'user_files')
-
+LOG_FILE = os.path.join(USER_FILES, 'ankisync.log')

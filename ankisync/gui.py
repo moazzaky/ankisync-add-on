@@ -10,18 +10,16 @@
 GUI.py initiates all buttons, dialog boxes, hooks, and monkey patches.
 """
 
-from . import utils
-from . import actions
+
 from aqt import gui_hooks, mw
 from aqt.qt import *
 from aqt.utils import showInfo
-
-# from .gui_hooks import browser_will_build_tree
-from .message_boxes.confirmation_message_box import ConfirmationMessageBox
+from . import actions
+from .widgets.debug_widget import DebugWidget
 from .widgets.login_widget import LoginWidget
-from .widgets.old_widget import OldWidget
-from .worker.worker import Worker
 from .widgets.sync_widget import SyncWidget
+from .worker.worker import Worker
+from . import utils
 
 # todo: add teardown of hooks?
 
@@ -32,6 +30,7 @@ class Gui:
         self.setup_gui_hooks()
 
         # setup widgets
+        self.debug_widget = DebugWidget()
         self.login_widget = LoginWidget()
         self.sync_widget = SyncWidget()
 
@@ -145,6 +144,7 @@ class Gui:
         else:
             utils.access_token.set(result['access_token'])
             showInfo("You have successfully logged in! :)")
+            # self.sync_widget
 
     def error_login_worker(self, results):
         showInfo(str(results))
@@ -153,4 +153,5 @@ class Gui:
 
 
 # avoid garbage collection, https://addon-docs.ankiweb.net/qt.html, todo: is this right?
-mw.ankisync_gui = gui = Gui()
+
+

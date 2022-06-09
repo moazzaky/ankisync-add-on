@@ -17,7 +17,7 @@ from aqt.qt import (
 )
 from aqt.utils import showInfo
 
-from ..config import APP_NAME
+from ..constants import APP_NAME
 
 
 class LoginWidget(QWidget):

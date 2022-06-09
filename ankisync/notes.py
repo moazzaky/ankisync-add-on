@@ -5,18 +5,23 @@
 # AnkiSync addon is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
 # Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option)
 # any later version.
+from typing import Union
 
+import logging
 from .libraries.bs4 import BeautifulSoup
 from aqt import mw
+from anki.notes import Note
 
 from . import media
-from .widgets.debug_widget import debug_widget
+
+logger = logging.getLogger('ankisync.notes')
+# from .widgets.debug_widget import debug_widget
 
 # save guid for future use
 
 
 # creates a new note for CURRENT deck
-def create(anki_deck_id, ankisync_flashcard_id, front, back, tags, updated_at):
+def create(anki_deck_id, anki_flashcard_id, ankisync_flashcard_id, front, back, extra, tags, updated_at):
 
     # parse front to determine if basic, cloze, or other
 
@@ -49,18 +54,21 @@ def create(anki_deck_id, ankisync_flashcard_id, front, back, tags, updated_at):
     # false as it should pick the current model, not the model for the current deck
     note = mw.col.new_note(model)
 
-    note['_extra'] = ''
+    note['_extra'] = extra
+    if extra is None:
+        note['_extra'] = ""
+
     note['_front'] = front
     note['_back'] = back
     note['_updated_at'] = updated_at
     note['_id'] = ankisync_flashcard_id
     note.guid = ankisync_flashcard_id
-    note.model()["did"] = anki_deck_id
+    note.note_type()["did"] = anki_deck_id  # fixme: what does this even do
 
     note.tags = []
 
     for tag in tags:
-        note.add_tag(tag['name'])
+        note.add_tag(tag)
 
     # note.id = id, cannot set as uuid, has to be int
 
@@ -68,13 +76,18 @@ def create(anki_deck_id, ankisync_flashcard_id, front, back, tags, updated_at):
 
     try:
         mw.col.add_note(note, anki_deck_id)
-    except:
-        print("Error adding note")
+    except Exception as e:
+        logger.debug("Could not create note " + str(e))
+
+    is_note_id_changed = change_note_id(note, anki_flashcard_id)
+
+    if is_note_id_changed is False:
+        return False
 
     return True
 
 
-def update(deck_id, ankisync_id, front, back, tags, updated_at) -> bool:
+def update(deck_id, anki_id, ankisync_id, front, back, extra, tags, updated_at) -> bool:
     deck = mw.col.decks.get(deck_id)
 
     if deck is None:
@@ -83,16 +96,21 @@ def update(deck_id, ankisync_id, front, back, tags, updated_at) -> bool:
     # debug_widget.append_text_edit(deck)
 
     # find notes matching this criteria -> returns an array of note ids
-    note_ids = mw.col.find_notes('"deck:' + deck['name'] + '" ' + '"_id:' + ankisync_id + '"')
+    note_ids = mw.col.find_notes('nid:' + str(anki_id))
 
+    # creates new note if doesnt exist
     if len(note_ids) <= 0:
-        return create(deck_id, ankisync_id, front, back, tags, updated_at)
+        logger.debug("could not find note so will create one " + str(anki_id))
+        # e(anki_deck_id, anki_flashcard_id, ankisync_flashcard_id, front, back, tags, updated_at):
+        return create(deck_id, anki_id, ankisync_id, front, back, extra, tags, updated_at)
     else:
         note_id = note_ids[0]
 
-    note = mw.col.getNote(note_id)
+    # logger.info("Finding note to update via ID " + str(note_id))
+    note = mw.col.get_note(note_id)
 
     if note is None:
+        logger.debug("Could not find note via ID " + str(note_id))
         return False
 
     # parse img tags to download + convert
@@ -112,13 +130,22 @@ def update(deck_id, ankisync_id, front, back, tags, updated_at) -> bool:
 
     note['_front'] = front
     note['_back'] = back
+    note['_extra'] = extra
+    if extra is None:
+        note['_extra'] = ""
+
     note['_updated_at'] = updated_at
 
     note.tags = []
 
-    for tag in tags:
-        note.addTag(tag['name'])
+    # logger.info("Adding tags to note " + str(tags))
 
+    for tag in tags:
+        note.addTag(tag)
+
+    logger.debug("Updating note ID " + str(note.id) + " " + repr(note))
+
+    #mw.col.update_note(note)
     note.flush()
 
     return True
@@ -128,9 +155,20 @@ def get_by_ankisync_id(id):
     return mw.col.find_notes("_id:" + id)
 
 
-def get_by_id(id):
-    return mw.col.getNote(id)  # or mw.col.find_notes("nid:" + id)
+# def get_by_id(id):
+    # return mw.col.get_note(id)  # or mw.col.find_notes("nid:" + id)
 
 
+def change_note_id(note, new_id) -> bool:
 
+    cards = note.cards()
 
+    try:
+        mw.col.db.execute("""update notes set id=? where id=? """, new_id, note.id)
+    except:
+        return None
+
+    for c in cards:
+        c.nid = new_id
+        c.usn = mw.col.usn()
+        c.flush()

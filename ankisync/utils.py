@@ -5,15 +5,8 @@
 # AnkiSync addon is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
 # Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option)
 # any later version.
-import os
 
-from aqt import mw
+# fixme: need a threadsafe singleton, whatever i'm doing here is messy
 from .dataclasses.access_token import DataClassAccessToken
 
-# access token "singleton"
 access_token = DataClassAccessToken()
-
-def get_user_files_directory():
-
-    return os.path.join(mw.pm.addonFolder(), "AnkiSync")
-

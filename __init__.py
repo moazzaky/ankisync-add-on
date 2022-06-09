@@ -1,13 +1,10 @@
+# Copyright (C) 2020-2022 Edward Husarcik, MD <https://www.husarcik.com/>
 #
-# AnkiSync
+# This file is part of AnkiSync add-on, an add-on for the program Anki.
 #
-# Copyright 2022 AnkiSync.com
-# All rights reserved
-#
+# AnkiSync addon is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General
+# Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option)
+# any later version.
 
-# Imports GUI which hooks in the entire add on, todo: is this the best way to init an add-on?
-from .ankisync.gui import *
+from . import ankisync
 
-# Stacks
-# https://stackoverflow.com/questions/4142151/how-to-import-the-class-within-the-same-directory-or-sub-directory
-# https://github.com/HelenFoster/KanjiVocab/

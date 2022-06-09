@@ -9,7 +9,7 @@
 from aqt.qt import pyqtSignal, pyqtSlot, Qt
 from aqt.qt import QWidget, QVBoxLayout, QPushButton, QProgressBar, QTextEdit
 
-from ..config import APP_NAME
+from ..constants import APP_NAME
 
 
 class OldWidget(QWidget):

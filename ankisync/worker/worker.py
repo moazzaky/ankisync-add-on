@@ -6,6 +6,7 @@ from aqt.utils import showInfo
 
 from .worker_signals import WorkerSignals
 
+
 class Worker(QRunnable):
     '''
     Worker thread

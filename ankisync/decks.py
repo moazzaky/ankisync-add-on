@@ -6,41 +6,76 @@
 # Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option)
 # any later version.
 
-# third party
+import logging
+from anki.decks import DeckDict, DeckId
 from aqt import mw
-import traceback
-import json
-
-# local
-#from .dataclasses.deck import DataClassDeck
+from typing import Union
+from .exceptions import ExistsError
 
 
-# Receives ankisync_id, name, and updated at. Needs to create local anki deck to get id to fully sync.
-from .widgets.debug_widget import debug_widget
+def change_deck_id(existing_anki_deck_id, new_anki_deck_id) -> bool:
+
+    deck = mw.col.decks.get(existing_anki_deck_id, False)
+
+    if deck is None:
+        raise KeyError("deck does not exist")
+
+    try:
+        mw.col.db.execute("UPDATE decks SET id=? WHERE id=?", new_anki_deck_id, existing_anki_deck_id)
+    except:
+        return False
+
+    try:
+        mw.col.db.execute("UPDATE cards SET did=? WHERE did=?", new_anki_deck_id, existing_anki_deck_id)
+
+    except:
+        # fixme: might need to change the ID back...eek
+        return False
+
+    # refresh the GUI as the ids have now changed!
+    # mw.taskman.run_on_main(lambda: mw.deckBrowser.refresh())
+
+    return True
 
 
-def create(name, description):
-
+def create(anki_deck_id: int, deck_name: str, deck_description: str) -> Union[DeckDict, None]:
     # check if already exists, if so, full stop
-    deck = mw.col.decks.byName("AnkiSync::" + name)
+    deck = mw.col.decks.get(anki_deck_id, False)
+    deck_by_name = mw.col.decks.by_name("AnkiSync::" + deck_name)
 
-    # todo: add better handling instead of just returning None
-    if deck:
-        return None
+    if deck or deck_by_name is not None:
+        raise ExistsError("deck already exists")  # parent will likely fail or rename/reid existing deck
 
-    # since we know the deck doesnt already exist, lets now create it
-    # first we initialize the deck and then
-    # todo: ? try except
-    deck_id = mw.col.decks.id("AnkiSync::" + name, True)
-    deck = mw.col.decks.get(deck_id)
+    # create deck
+    deck_id = mw.col.decks.id("AnkiSync::" + deck_name, True)
 
-    # todo: check if deck was created
+    if deck_id is None:
+        raise Exception("anki could not create deck by name")  # anki couldn't make the deck for whatever reason
 
-    deck['desc'] = description
+    # time to change the ID to an AnkiSync friendly one
+    try:
+        mw.col.db.execute("UPDATE decks SET id=? WHERE id=?", anki_deck_id, deck_id)
+    except:
+        # fixme: narrow exception
+        raise Exception("anki could not modify deck id")
 
-    # refresh deck UI
-    # todo: need to add mw.deckBrowser.refresh(), causes crash if called here
+    # finally, lets get the deck by its new ID and change its description
+    deck = mw.col.decks.get(anki_deck_id)
 
+    if deck is None:
+        raise KeyError(f"anki could not find deck by new deck id {anki_deck_id}")
+
+    deck['desc'] = deck_description
+
+    try:
+        mw.col.decks.save(deck)
+    except:
+        # fixme: narrow exception
+        raise Exception("anki could not save deck")
+
+    # fixme: need to add mw.deckBrowser.refresh(), causes crash if called here due to Qt involvement
+
+    logging.info('Created a new deck.')
     return deck
 
 
@@ -49,19 +84,11 @@ def create_root_deck():
 
 
 # returns deck | None
-def get(name):
-    deck = mw.col.decks.byName("AnkiSync::" + name)
-
-    return deck
-
-
-# returns deck | None
 def get_root_deck():
     return mw.col.decks.by_name("AnkiSync")
 
 
 def get_root_deck_child_ids():
-
     root_deck = get_root_deck()
 
     if root_deck is None:
@@ -76,68 +103,9 @@ def get_root_deck_child_ids():
     return [x[1] for x in tuples]
 
 
-def remove(name):
-    deck_id = mw.col.decks.id_for_name(name)
+# returns deck | None
+def get_deck_by_name(name):
+    deck = mw.col.decks.by_name("AnkiSync::" + name)
 
-    mw.col.decks.rem(deck_id)
-
-
-####################
-
-
-
-
-def update(anki_id, ankisync_id, name, updated_at):
-    anki_deck = mw.col.decks.get(anki_id)
-
-    if anki_deck is None:
-        return
-
-    anki_deck['name'] = name
-
-    deck = DataClassDeck(ankisync_id, anki_id, name, updated_at)
-
-    deck.update()
-    # deck['updated_at'] = updated_at
-
-    mw.col.decks.save(anki_deck)
-
-# deletes only the reference to the deck for when a user unsubscribes on ankisync.com
-def soft_delete(self) -> bool:
-
-    return None
-
-
-# deprecated
-def get_synced_decks() -> any:
-    try:
-        return []
-
-    except Exception as error:
-        debug_widget.append_text_edit(traceback.format_exc())
-        # todo: proper error handling
-        return False
-
-
-
-    if decks is None:
-        return []
-    else:
-        return decks
-
-
-# deprecated
-def _get_flashcards_for_deck(self, deck_id):
-    cids = mw.col.decks.cids(deck_id)
-
-    cards = [mw.col.getCard(cid) for cid in cids]
-
-    notes = [mw.col.getNote(card.nid) for card in cards]
-
-    flashcards = []
-    for note in notes:
-        if all(elem in mw.col.models.fieldNames(note.model()) for elem in ['_id', '_updated_at', '_front', '_back', '_notes']):
-            flashcards.append(note)
-
-    return flashcards
+    return deck
 

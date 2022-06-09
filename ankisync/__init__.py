@@ -6,8 +6,24 @@
 # Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option)
 # any later version.
 
-from . import api
-from . import config
-from . import gui
-from . import media
-from . import reload
+
+import sys
+
+# if 'pytest' not in sys.modules:
+from aqt import mw
+
+from .gui import Gui
+from . import decks
+from . import exceptions
+from . import logger
+
+
+class AnkiSync:
+    def __init__(self):
+
+        self.decks = decks
+        self.gui = Gui()
+
+
+mw.ankisync = ankisync = AnkiSync()
+

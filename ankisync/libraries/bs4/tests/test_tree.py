@@ -37,7 +37,7 @@ from . import (
 )
 
 class TestFind(SoupTest):
-    """Basic tests of the find() method.
+    """Basic test of the find() method.
 
     find() just calls find_all() with limit=1, so it's not tested all
     that thouroughly here.
@@ -68,7 +68,7 @@ class TestFind(SoupTest):
         assert 2 == len(soup.find_all('a'))
 
 class TestFindAll(SoupTest):
-    """Basic tests of the find_all() method."""
+    """Basic test of the find_all() method."""
 
     def test_find_all_text_nodes(self):
         """You can search the tree for text nodes."""
@@ -614,7 +614,7 @@ class SiblingTest(SoupTest):
                     </span>
                     <span id="4"></span>
                     </html>'''
-        # All that whitespace looks good but makes the tests more
+        # All that whitespace looks good but makes the test more
         # difficult. Get rid of it.
         markup = re.compile(r"\n\s*").sub("", markup)
         self.tree = self.soup(markup)

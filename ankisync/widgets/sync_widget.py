@@ -40,7 +40,7 @@ from aqt.utils import showInfo
 from .decks_widget import DecksWidget
 from .. import api
 from ..sync import Sync
-from ..config import APP_NAME
+from ..constants import APP_NAME
 from ..message_boxes.confirmation_message_box import ConfirmationMessageBox
 from ..utils import access_token
 from ..worker import Worker
@@ -214,6 +214,8 @@ class SyncWidget(QWidget):
 
         QThreadPool.globalInstance().start(sync_worker)
 
+        mw.taskman.run_on_main(lambda: mw.deckBrowser.refresh())
+
     def sync_signal_progress(self, progress):
         (text, percentage) = progress
         self.set_progress_bar_percentage(percentage)
@@ -232,9 +234,11 @@ class SyncWidget(QWidget):
         #cursor.setPosition(0)
         #self.text_edit.setTextCursor(cursor)
 
-        self.text_edit.insertPlainText(text)
-        self.text_edit.insertPlainText('\n')
-        #self.text_edit.append(value)
+        #self.text_edit.insertPlainText(text)
+        #self.text_edit.insertPlainText('\n')
+
+        # append allows for HTML styling
+        self.text_edit.append(text)
         # self.text_edit.append('\n')
 
     def clear_text_edit(self):

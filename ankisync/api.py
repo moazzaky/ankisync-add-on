@@ -9,9 +9,9 @@ import requests
 
 # local imports
 from . import utils
-from .config import BASE_URL
-from .gui import gui
-from .widgets.debug_widget import debug_widget
+from .constants import BASE_URL
+from .objects import Deck
+# from .widgets.debug_widget import debug_widget
 
 
 def post_access_token(email, password, device_name):
@@ -20,7 +20,14 @@ def post_access_token(email, password, device_name):
 
     json_payload = {"email": email, "password": password, "device_name": device_name}
 
-    x = requests.post(url, json.dumps(json_payload), headers=headers)
+    try:
+        x = requests.post(url, json.dumps(json_payload), headers=headers, timeout=5)
+    except requests.exceptions.Timeout:
+        return {
+            "success": False,
+            "message": "There was an error connecting to the AnkiSync.com server. This could be due to our server "
+                       "having issues or your internet being down. "
+        }
 
     if x.status_code == 200:
         response_json = x.json()
@@ -32,6 +39,11 @@ def post_access_token(email, password, device_name):
                 "success": True,
                 "access_token": access_token
             }
+        else:
+            return {
+                "success": False,
+                "message": "An unknown error occurred. Please try again later."
+            }
     elif x.status_code == 422:
         return {
             "success": False,
@@ -39,50 +51,26 @@ def post_access_token(email, password, device_name):
         }
     else:
         # post error to debug widget
-        debug_widget.append_text_edit(x.status_code)
-        debug_widget.append_text_edit(x.json())
+        #debug_widget.append_text_edit(x.status_code)
+        #debug_widget.append_text_edit(x.json())
         return {
             "success": False,
             "message": "An unknown error occurred. Please try again later."
         }
 
 
-def post_remote_deck(anki_id, ankisync_id):
+def put_deck(ankisync_deck_id):
     headers = {
         'Accept': 'application/json',
         'Authorization': 'Bearer ' + utils.access_token.get(),
         'Content-Type': 'application/json'
     }
 
-    url = BASE_URL + "api/remote_decks"
+    url = BASE_URL + "api/decks/" + ankisync_deck_id
 
-    json_payload = {"anki_deck_id": anki_id, "deck_id": ankisync_id}
+    json_payload = {"deck_id": ankisync_deck_id, "last_synced_at": True}
 
-    x = requests.post(url, json.dumps(json_payload), headers=headers)
-
-    # debug_widget.append_text_edit(x.json())
-
-    try:
-        response_json = x.json()
-
-        return response_json
-    except:
-        debug_widget.append_text_edit("Raw post_remote_deck response for debugging..." + str(x.raw))
-        return None
-
-
-def put_remote_deck(anki_deck_id, ankisync_deck_id):
-    headers = {
-        'Accept': 'application/json',
-        'Authorization': 'Bearer ' + utils.access_token.get(),
-        'Content-Type': 'application/json'
-    }
-
-    url = BASE_URL + "api/remote_decks"
-
-    json_payload = {"anki_deck_id": anki_deck_id, "deck_id": ankisync_deck_id, "last_synced_at": True}
-
-    x = requests.put(url, json.dumps(json_payload), headers=headers)
+    x = requests.put(url, json.dumps(json_payload), headers=headers, timeout=5)
 
     ##debug_widget.append_text_edit(x.json())
 
@@ -100,13 +88,15 @@ def get_deck_by_id(deck_id):
     url = BASE_URL + 'api/decks/' + deck_id
 
     # x = requests.post(url, json.dumps({"decks": decks}), headers=headers)
-    x = requests.get(url, None, headers=headers)
+    x = requests.get(url, None, headers=headers, timeout=5)
 
     if x.status_code == 200:
         response_json = x.json()
 
-        if response_json.get('success'):
-            deck = response_json.get('data', {}).get('deck')
+        if response_json.get('success') and response_json.get('data', {}).get('deck'):
+            deck_dict = response_json.get('data', {}).get('deck')
+
+            deck = Deck(deck_dict['anki_id'], deck_dict['external_id'], deck_dict['name'], deck_dict['description'], deck_dict['updated_at'], deck_dict['last_synced_at'], deck_dict['flashcards'])
             # returns flashcards in ankisync format
             return deck
     else:
@@ -124,7 +114,7 @@ def get_subscribed_decks():
     url = BASE_URL + 'api/me/decks'
 
     # x = requests.post(url, json.dumps({"decks": decks}), headers=headers)
-    x = requests.get(url, None, headers=headers)
+    x = requests.get(url, None, headers=headers, timeout=5)
 
     if x.status_code == 200:
         response_json = x.json()
@@ -142,8 +132,9 @@ def get_subscribed_decks():
         #debug_widget.append_text_edit(gui.access_token)
         return None
     else:
-        debug_widget.append_text_edit(x.status_code)
-        debug_widget.append_text_edit(x.json())
+        return None
+        #debug_widget.append_text_edit(x.status_code)
+        #debug_widget.append_text_edit(x.json())
 
 
 # get synced decks from conf which is synced to remote anki server
@@ -156,7 +147,7 @@ def get_remote_decks():
     url = BASE_URL + 'api/remote_decks'
 
     # x = requests.post(url, json.dumps({"decks": decks}), headers=headers)
-    x = requests.get(url, None, headers=headers)
+    x = requests.get(url, None, headers=headers, timeout=5)
 
     if x.status_code == 200:
         response_json = x.json()

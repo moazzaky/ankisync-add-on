@@ -1,5 +1,5 @@
 # encoding: utf-8
-"""Helper classes for tests."""
+"""Helper classes for test."""
 
 # Use of this source code is governed by the MIT license.
 __license__ = "MIT"
@@ -237,7 +237,7 @@ class SoupTest(object):
     def assert_selects(self, tags, should_match):
         """Make sure that the given tags have the correct text.
 
-        This is used in tests that define a bunch of tags, each
+        This is used in test that define a bunch of tags, each
         containing a single string, and then select certain strings by
         some mechanism.
         """
@@ -246,7 +246,7 @@ class SoupTest(object):
     def assert_selects_ids(self, tags, should_match):
         """Make sure that the given tags have the correct IDs.
 
-        This is used in tests that define a bunch of tags, each
+        This is used in test that define a bunch of tags, each
         containing a single string, and then select certain strings by
         some mechanism.
         """
@@ -276,7 +276,7 @@ class TreeBuilderSmokeTest(object):
         assert soup.a['class'] == ['a', 'b', 'c']
         
     def test_fuzzed_input(self):
-        # This test centralizes in one place the various fuzz tests
+        # This test centralizes in one place the various fuzz test
         # for Beautiful Soup created by the oss-fuzz project.
         
         # These strings superficially resemble markup, but they
@@ -284,7 +284,7 @@ class TreeBuilderSmokeTest(object):
         # hope for is that parsing these strings won't crash the
         # parser.
         #
-        # n.b. This markup is commented out because these fuzz tests
+        # n.b. This markup is commented out because these fuzz test
         # _do_ crash the parser. However the crashes are due to bugs
         # in html.parser, not Beautiful Soup -- otherwise I'd fix the
         # bugs!
@@ -311,9 +311,9 @@ class HTMLTreeBuilderSmokeTest(TreeBuilderSmokeTest):
     """A basic test of a treebuilder's competence.
 
     Any HTML treebuilder, present or future, should be able to pass
-    these tests. With invalid markup, there's room for interpretation,
+    these test. With invalid markup, there's room for interpretation,
     and different parsers can handle it differently. But with the
-    markup in these tests, there's not much room for interpretation.
+    markup in these test, there's not much room for interpretation.
     """
 
     def test_empty_element_tags(self):
@@ -748,9 +748,9 @@ Hello, world!
         assert ['foo', 'bar'] == soup.a['class']
         
     #
-    # Generally speaking, tests below this point are more tests of
-    # Beautiful Soup than tests of the tree builders. But parsers are
-    # weird, so we run these tests separately for every tree builder
+    # Generally speaking, test below this point are more test of
+    # Beautiful Soup than test of the tree builders. But parsers are
+    # weird, so we run these test separately for every tree builder
     # to detect any differences between them.
     #
 
