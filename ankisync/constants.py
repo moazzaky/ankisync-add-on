@@ -19,8 +19,7 @@ Instructions
 
 # App specific
 APP_NAME = "AnkiSync"
-# BASE_URL = "https://ankisync.com/"
-BASE_URL = "http://ankisync.home.arpa/"
+BASE_URL = "https://ankisync.com/"
 
 # Paths
 ADDON = os.path.dirname(os.path.abspath(__file__))
