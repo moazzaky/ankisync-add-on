@@ -14,10 +14,11 @@ class ConfirmationMessageBox(QMessageBox):
     def __init__(self, question_title, question_text):
         super().__init__()
 
+        # self.StandardButton.Yes
+
         self.question_title = question_title
 
-        #self.question_text = 'Please make sure all of your devices are FULLY synced with the Anki remote server before using AnkiSync. If you have reviews or other changes waiting on another device that have not been synchronized, they will be LOST. \nContinue?'
         self.question_text = question_text
 
-        # setup question
-        self.response = self.question(self, self.question_title, self.question_text, self.Yes | self.No)
+        # setup question, if we need to can use aqt.qt.qtmajor
+        self.response = self.question(self, self.question_title, self.question_text, self.StandardButton.Yes | self.StandardButton.No)

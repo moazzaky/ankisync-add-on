@@ -13,6 +13,7 @@ import sys
 from aqt import mw
 
 from .gui import Gui
+from . import constants
 from . import decks
 from . import exceptions
 from . import logger
@@ -20,7 +21,7 @@ from . import logger
 
 class AnkiSync:
     def __init__(self):
-
+        self.constants = constants
         self.decks = decks
         self.gui = Gui()
 
